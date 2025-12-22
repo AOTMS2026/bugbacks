@@ -116,15 +116,106 @@ app.post('/api/plan-trip', async (req, res) => {
             "destinationCoordinates": { "lat": number, "lng": number },
             "duration": "X Days",
             "budget": "₹XXXXX",
+            "initialJourney": {
+              "distance": "XXXX km",
+              "duration": "XX hours/days",
+              "transportType": "Train/Bus/Flight",
+              "departureTime": "HH:MM AM/PM",
+              "arrivalTime": "HH:MM AM/PM",
+              "cost": "₹XXXX"
+            },
+            "budgetBreakdown": {
+              "longDistanceTransport": "₹XXXX (Train/Bus/Flight)",
+              "localTransport": "₹XXXX (Auto/Taxi/Local Train)",
+              "accommodation": "₹XXXX",
+              "food": "₹XXXX",
+              "activities": "₹XXXX",
+              "waterAndRefreshments": "₹XXXX",
+              "miscellaneous": "₹XXXX"
+            },
+            "transportation": "Recommended transport (e.g., Flight, Train, Local Taxi)",
+            "realTimeData": {
+              "weather": "Current weather summary",
+              "traffic": "Typical traffic conditions",
+              "safety": "Safety tips and alerts",
+              "events": "Upcoming local events"
+            },
+            "bookingSuggestions": {
+              "transport": "Where to book (e.g., IRCTC for trains, RedBus for buses)",
+              "accommodation": "Where to book (e.g., Booking.com, MakeMyTrip)",
+              "activities": "Where to book (e.g., Klook, GetYourGuide)"
+            },
+            "extraMoneySuggestion": "₹XXXX (Recommended buffer for emergencies/shopping)",
+            "groupSplitting": {
+              "totalPerPerson": "₹XXXX",
+              "dayWisePerPerson": [
+                { "day": 1, "amount": "₹XXXX" }
+              ]
+            },
+            "vehicleComparison": [
+              {
+                "vehicle": "Train",
+                "duration": "XX hours",
+                "cost": "₹XXXX",
+                "pros": "Comfortable, scenic",
+                "cons": "Fixed timings",
+                "bestFor": "Families/Long distance"
+              },
+              {
+                "vehicle": "Bus",
+                "duration": "XX hours",
+                "cost": "₹XXXX",
+                "pros": "Flexible, frequent",
+                "cons": "Less comfort",
+                "bestFor": "Budget travelers"
+              },
+              {
+                "vehicle": "Car/Bike",
+                "duration": "XX hours",
+                "cost": "₹XXXX (Fuel + Toll)",
+                "pros": "Complete freedom",
+                "cons": "Driving fatigue",
+                "bestFor": "Friends/Road trips"
+              }
+            ],
+            "aiInsights": {
+              "whyTheseOptions": "Explanation of why this plan is best for the user's group type. Specifically analyze if the budget is high for the distance and suggest luxury upgrades if so.",
+              "tips": ["Tip 1", "Tip 2"],
+              "dos": ["Do 1", "Do 2"],
+              "donts": ["Don't 1", "Don't 2"],
+              "waitingTimeEstimates": "Estimated waiting times at major attractions/transit."
+            },
+            "checklist": [
+              "Aadhar Card (Original & Digital)",
+              "PAN Card",
+              "Mobile Power Bank & Charger",
+              "Dress Code: [Specific suggestions based on destination/weather]",
+              "Other essential items..."
+            ],
             "days": [
               {
                 "day": 1,
                 "title": "Day Title",
-                "activities": ["Activity 1", "Activity 2"],
+                "dailyTravel": {
+                  "distance": "XX km",
+                  "mode": "Local Train/Bus/Taxi",
+                  "timings": "e.g., 9:00 AM - 10:00 AM",
+                  "cost": "₹XXXX"
+                },
+                "activities": [
+                  { "name": "Activity 1", "time": "HH:MM AM/PM", "cost": "₹XXXX" },
+                  { "name": "Activity 2", "time": "HH:MM AM/PM", "cost": "₹XXXX" }
+                ],
                 "hotel": "Hotel Name & Description",
-                "food": ["Dish 1", "Restaurant 1"],
-                "places": ["Place 1", "Place 2"],
-                "dailyBudget": "₹XXXX",
+                "food": [
+                  { "item": "Dish 1", "time": "HH:MM AM/PM", "cost": "₹XXXX" },
+                  { "restaurant": "Restaurant 1", "time": "HH:MM AM/PM", "cost": "₹XXXX" }
+                ],
+                "places": [
+                  { "name": "Place 1", "visitTimings": "HH:MM AM - HH:MM PM", "entryFee": "₹XXXX" },
+                  { "name": "Place 2", "visitTimings": "HH:MM AM - HH:MM PM", "entryFee": "₹XXXX" }
+                ],
+                "dailyBudget": "₹XXXX"
               }
             ]
           }
@@ -132,7 +223,13 @@ app.post('/api/plan-trip', async (req, res) => {
           IMPORTANT: 
           1. All currency must be in INR (₹).
           2. Coordinates must be accurate for the locations.
-          3. Do not include any text outside the JSON object.`
+          3. Include realistic transportation and real-time data (weather, traffic, safety, events) based on the destination.
+          4. Provide a detailed budget breakdown including specific costs for water, local transport (train/bus), long-distance transport, food, and activities.
+          5. "initialJourney" should describe the travel from origin to destination with realistic departure/arrival times.
+          6. "dailyTravel" should describe the local movement within the destination for that day with estimated timings.
+          7. "places" must include realistic "visitTimings" (opening/closing hours).
+          8. "activities" and "food" should have specific scheduled times.
+          9. Do not include any text outside the JSON object.`
         },
         {
           role: "user",
@@ -165,7 +262,7 @@ app.post('/api/save-trip', auth, async (req, res) => {
     console.log('--- Save Trip Request ---');
     console.log('User ID from token:', req.user.id);
     
-    const { origin, destination, originCoordinates, destinationCoordinates, days, budget, duration } = req.body;
+    const { origin, destination, originCoordinates, destinationCoordinates, days, budget, initialJourney, budgetBreakdown, duration, transportation, realTimeData, bookingSuggestions, extraMoneySuggestion, checklist, groupSplitting, vehicleComparison, aiInsights } = req.body;
     
     // Log the received data for debugging
     console.log('Received trip data:', {
@@ -173,7 +270,10 @@ app.post('/api/save-trip', auth, async (req, res) => {
       destination,
       daysCount: days?.length,
       budget,
-      duration
+      initialJourney,
+      budgetBreakdown,
+      duration,
+      transportation
     });
 
     if (!origin || !destination || !days || !Array.isArray(days)) {
@@ -191,7 +291,17 @@ app.post('/api/save-trip', auth, async (req, res) => {
       destinationCoordinates,
       days,
       budget,
-      duration
+      initialJourney,
+      budgetBreakdown,
+      duration,
+      transportation,
+      realTimeData,
+      bookingSuggestions,
+      extraMoneySuggestion,
+      checklist,
+      groupSplitting,
+      vehicleComparison,
+      aiInsights
     });
 
     const savedTrip = await newTrip.save();

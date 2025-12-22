@@ -57,6 +57,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
       return inside
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pointInFeature = (point: [number, number], feature: any): boolean => {
       const geometry = feature.geometry
 
@@ -97,6 +98,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
       return false
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const generateDotsInPolygon = (feature: any, dotSpacing = 16) => {
       const dots: [number, number][] = []
       const bounds = d3.geoBounds(feature)
@@ -129,7 +131,8 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
     }
 
     const allDots: DotData[] = []
-    let landFeatures: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let landFeatures: any = null
 
     const render = () => {
       // Clear canvas
@@ -160,6 +163,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
 
         // Draw land outlines
         context.beginPath()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         landFeatures.features.forEach((feature: any) => {
           path(feature)
         })
@@ -197,24 +201,27 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
 
         // Generate dots for all land features
         let totalDots = 0
-        landFeatures.features.forEach((feature: any) => {
-          const dots = generateDotsInPolygon(feature, 16)
-          dots.forEach(([lng, lat]) => {
-            allDots.push({ lng, lat, visible: true })
-            totalDots++
+        if (landFeatures) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          landFeatures.features.forEach((feature: any) => {
+            const dots = generateDotsInPolygon(feature, 16)
+            dots.forEach(([lng, lat]) => {
+              allDots.push({ lng, lat, visible: true })
+              totalDots++
+            })
           })
-        })
 
-        console.log(`[v0] Total dots generated: ${totalDots} across ${landFeatures.features.length} land features`)
+          console.log(`[v0] Total dots generated: ${totalDots} across ${landFeatures.features.length} land features`)
+        }
 
         render()
-      } catch (err) {
+      } catch {
         setError("Failed to load land map data")
       }
     }
 
     // Set up rotation and interaction
-    const rotation = [0, 0]
+    const rotation: [number, number] = [0, 0]
     let autoRotate = true
     const rotationSpeed = 0.5
 
@@ -301,9 +308,6 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
         className="w-full h-auto rounded-2xl bg-background dark"
         style={{ maxWidth: "100%", height: "auto" }}
       />
-      <div className="absolute bottom-4 left-4 text-xs text-muted-foreground px-2 py-1 rounded-md dark bg-neutral-900">
-        Drag to rotate • Scroll to zoom
-      </div>
     </div>
   )
 }

@@ -63,6 +63,7 @@ export function Globe({
   }
 
   const onRender = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (state: Record<string, any>) => {
       if (!pointerInteracting.current) phi.current += 0.005
       state.phi = phi.current + r

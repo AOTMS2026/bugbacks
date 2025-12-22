@@ -42,7 +42,7 @@ export function VacationPlans() {
                   alt={plan.name} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <div className="flex justify-between items-start mb-3 px-2">
                 <h3 className="text-xl font-bold text-black dark:text-white">{plan.name}</h3>

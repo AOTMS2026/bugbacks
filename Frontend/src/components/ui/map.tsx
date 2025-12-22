@@ -10,7 +10,6 @@ interface MapProps {
   }>;
   lineColor?: string;
   showLabels?: boolean;
-  labelClassName?: string;
   animationDuration?: number;
   loop?: boolean;
 }
@@ -19,7 +18,6 @@ export function WorldMap({
   dots = [], 
   lineColor = "#0ea5e9",
   showLabels = true,
-  labelClassName = "text-sm",
   animationDuration = 2,
   loop = true
 }: MapProps) {
@@ -64,10 +62,10 @@ export function WorldMap({
   const fullCycleDuration = totalAnimationTime + pauseTime;
 
   return (
-    <div className="w-full aspect-[2/1] md:aspect-[2.5/1] lg:aspect-[2/1] dark:bg-black bg-white rounded-lg relative font-sans overflow-hidden">
+    <div className="w-full aspect-2/1 md:aspect-2.5/1 lg:aspect-2/1 dark:bg-black bg-white rounded-lg relative font-sans overflow-hidden">
       <img
         src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
-        className="h-full w-full [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none object-cover"
+        className="h-full w-full mask-[linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none object-cover"
         alt="world map"
         draggable={false}
       />

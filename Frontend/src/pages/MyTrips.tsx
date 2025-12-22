@@ -1,18 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, IndianRupee, Trash2, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, IndianRupee, Trash2, ExternalLink, Route } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Activity {
   day: number;
   title: string;
-  activities: string[];
+  dailyTravel?: {
+    distance: string;
+    mode: string;
+    timings: string;
+    cost: string;
+  };
+  activities: { name: string; time: string; cost: string }[];
   hotel: string;
-  food: string[];
-  places: string[];
+  food: { item?: string; restaurant?: string; time: string; cost: string }[];
+  places: { name: string; visitTimings: string; entryFee: string }[];
   dailyBudget: string;
 }
 
@@ -30,7 +36,57 @@ interface Trip {
   };
   days: Activity[];
   budget: string;
+  initialJourney?: {
+    distance: string;
+    duration: string;
+    transportType: string;
+    departureTime: string;
+    arrivalTime: string;
+    cost: string;
+  };
+  budgetBreakdown?: {
+    longDistanceTransport: string;
+    localTransport: string;
+    accommodation: string;
+    food: string;
+    activities: string;
+    waterAndRefreshments: string;
+    miscellaneous: string;
+  };
   duration: string;
+  transportation?: string;
+  realTimeData?: {
+    weather: string;
+    traffic: string;
+    safety: string;
+    events: string;
+  };
+  bookingSuggestions?: {
+    transport: string;
+    accommodation: string;
+    activities: string;
+  };
+  extraMoneySuggestion?: string;
+  checklist?: string[];
+  groupSplitting?: {
+    totalPerPerson: string;
+    dayWisePerPerson: { day: number; amount: string }[];
+  };
+  vehicleComparison?: {
+    vehicle: string;
+    duration: string;
+    cost: string;
+    pros: string;
+    cons: string;
+    bestFor: string;
+  }[];
+  aiInsights?: {
+    whyTheseOptions: string;
+    tips: string[];
+    dos: string[];
+    donts: string[];
+    waitingTimeEstimates: string;
+  };
   createdAt: string;
 }
 
@@ -39,6 +95,18 @@ const MyTrips = () => {
   const navigate = useNavigate();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return (R * c).toFixed(1);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -130,22 +198,22 @@ const MyTrips = () => {
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col transition-colors duration-300">
       <Navbar />
       
-      <main className="grow container mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-12">
+      <main className="grow container mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
           <div>
-            <h1 className="text-4xl font-bold mb-2">My Saved Trips</h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">Your collection of AI-planned adventures.</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">My Saved Trips</h1>
+            <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg">Your collection of AI-planned adventures.</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3 w-full md:w-auto">
             <button 
               onClick={() => window.location.reload()}
-              className="px-6 py-3 rounded-xl border border-black/10 dark:border-white/10 text-black dark:text-white font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+              className="flex-1 md:flex-none px-4 md:px-6 py-3 rounded-xl border border-black/10 dark:border-white/10 text-black dark:text-white font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all text-sm md:text-base"
             >
               Refresh
             </button>
             <button 
               onClick={() => navigate('/planner')}
-              className="px-6 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all"
+              className="flex-2 md:flex-none px-4 md:px-6 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all text-sm md:text-base"
             >
               Plan New Trip
             </button>
@@ -157,27 +225,27 @@ const MyTrips = () => {
             <div className="w-12 h-12 border-4 border-black/10 dark:border-white/10 border-t-black dark:border-t-white rounded-full animate-spin" />
           </div>
         ) : trips.length === 0 ? (
-          <div className="text-center py-24 bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl">
-            <MapPin className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">No trips saved yet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">Start planning your first adventure with our AI agent.</p>
+          <div className="text-center py-16 md:py-24 px-6 bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl">
+            <MapPin className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-bold mb-2">No trips saved yet</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 text-sm md:text-base">Start planning your first adventure with our AI agent.</p>
             <button 
               onClick={() => navigate('/planner')}
-              className="px-8 py-4 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all"
+              className="w-full md:w-auto px-8 py-4 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all"
             >
               Create Your First Trip
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {trips.map((trip) => (
               <div key={trip._id} className="bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl overflow-hidden hover:border-black/10 dark:hover:border-white/20 transition-all group shadow-sm">
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-bold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <div className="p-5 md:p-6 space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <h3 className="text-xl md:text-2xl font-bold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
                       {trip.origin} → {trip.destination}
                     </h3>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                       <button 
                         onClick={() => openInGoogleMaps(trip.originCoordinates, trip.destinationCoordinates)}
                         className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-all"
@@ -194,29 +262,40 @@ const MyTrips = () => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {trip.duration}</span>
-                    <span className="flex items-center gap-1"><IndianRupee className="w-4 h-4" /> {trip.budget}</span>
+                  <div className="flex flex-wrap gap-3 md:gap-4 text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md"><Calendar className="w-3.5 h-3.5 md:w-4 md:h-4" /> {trip.duration}</span>
+                    <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md"><IndianRupee className="w-3.5 h-3.5 md:w-4 md:h-4" /> {trip.budget}</span>
+                    {trip.originCoordinates && trip.destinationCoordinates && (
+                      <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md">
+                        <Route className="w-3.5 h-3.5 md:w-4 md:h-4" /> 
+                        {calculateDistance(
+                          trip.originCoordinates.lat,
+                          trip.originCoordinates.lng,
+                          trip.destinationCoordinates.lat,
+                          trip.destinationCoordinates.lng
+                        )} km
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-2 pt-4 border-t border-black/5 dark:border-white/5">
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Itinerary Preview</p>
+                    <p className="text-[10px] md:text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Itinerary Preview</p>
                     <div className="space-y-2">
                       {trip.days.slice(0, 2).map((day) => (
-                        <div key={day.day} className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        <div key={day.day} className="text-xs md:text-sm text-gray-600 dark:text-gray-400 truncate">
                           <span className="font-bold text-black dark:text-white mr-2">Day {day.day}:</span>
                           {day.title}
                         </div>
                       ))}
                       {trip.days.length > 2 && (
-                        <p className="text-xs text-gray-400 dark:text-gray-600">+{trip.days.length - 2} more days...</p>
+                        <p className="text-[10px] md:text-xs text-gray-400 dark:text-gray-600">+{trip.days.length - 2} more days...</p>
                       )}
                     </div>
                   </div>
 
                   <button 
                     onClick={() => navigate(`/planner`, { state: { savedTrip: trip } })}
-                    className="w-full py-3 rounded-xl bg-black/5 dark:bg-white/10 text-black dark:text-white font-bold hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all mt-4"
+                    className="w-full py-3 md:py-4 rounded-xl bg-black/5 dark:bg-white/10 text-black dark:text-white font-bold hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all mt-4 text-sm md:text-base"
                   >
                     View Full Details
                   </button>
