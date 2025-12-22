@@ -179,7 +179,7 @@ const Planner = () => {
       Please adjust the plan based on this request and return the FULL updated JSON itinerary following the same structure as before.
       Include vehicle comparisons, group splitting, and AI insights in the response.`;
 
-      const response = await fetch('http://localhost:8000/api/plan-trip', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/plan-trip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +266,7 @@ const Planner = () => {
       7. Group-based cost splitting (total per person and day-wise per person).
       8. AI Insights: Analyze if the budget is high or low for the given distance and duration. If the budget is high for a short distance, suggest luxury upgrades. If low, suggest cost-saving tips. Include travel tips, do's and don'ts, and waiting time estimates at attractions.`;
 
-      const response = await fetch('http://localhost:8000/api/plan-trip', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/plan-trip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -306,7 +306,7 @@ const Planner = () => {
       console.log('Saving trip with token:', token ? 'Present' : 'Missing');
       console.log('Itinerary data being sent:', itinerary);
 
-      const response = await fetch('http://localhost:8000/api/save-trip', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/save-trip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

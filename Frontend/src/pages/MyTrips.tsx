@@ -123,8 +123,8 @@ const MyTrips = () => {
           return;
         }
 
-        console.log('Fetching trips from: http://localhost:8000/api/my-trips');
-        const response = await fetch('http://localhost:8000/api/my-trips', {
+        console.log(`Fetching trips from: ${import.meta.env.VITE_API_URL}/api/my-trips`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/my-trips`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -163,7 +163,7 @@ const MyTrips = () => {
     const deleteToast = toast.loading('Deleting trip...');
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/delete-trip/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/delete-trip/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
