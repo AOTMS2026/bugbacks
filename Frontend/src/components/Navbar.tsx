@@ -12,7 +12,7 @@ export function Navbar() {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-md transition-colors duration-300">
+    <nav className="sticky top-0 z-[9999] w-full border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-md transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <motion.div
@@ -24,7 +24,7 @@ export function Navbar() {
               <span className="text-2xl font-bold tracking-tighter text-black dark:text-white font-oswald uppercase">Travel<span className="text-gray-500">Planner</span></span>
             </Link>
           </motion.div>
-          
+
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-8">
               {user && (
@@ -33,17 +33,17 @@ export function Navbar() {
                 </motion.div>
               )}
               <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
-                <Link to="/destinations" className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Destinations</Link>
+                <Link to="/destinations" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Destinations</Link>
               </motion.div>
               {user && (
                 <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
-                  <Link to="/my-trips" className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">My Trips</Link>
+                  <Link to="/my-trips" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">My Trips</Link>
                 </motion.div>
               )}
               <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
-                <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Blog</a>
+                <a href="#" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Blog</a>
               </motion.div>
-              
+
               <div className="flex items-center gap-4 ml-4 border-l border-black/10 dark:border-white/10 pl-8">
                 <button
                   onClick={toggleTheme}
@@ -55,7 +55,7 @@ export function Navbar() {
 
                 {user ? (
                   <div className="relative">
-                    <button 
+                    <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       className="flex items-center gap-2 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
@@ -68,7 +68,7 @@ export function Navbar() {
 
                     <AnimatePresence>
                       {isProfileOpen && (
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -87,11 +87,11 @@ export function Navbar() {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="px-2 pt-2">
                             <div className="px-4 py-2">
-                              <Link 
-                                to="/planner" 
+                              <Link
+                                to="/planner"
                                 onClick={() => setIsProfileOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all mb-2"
                               >
@@ -99,15 +99,15 @@ export function Navbar() {
                                 <span>Create New Trip</span>
                               </Link>
 
-                              <Link 
-                                to="/my-trips" 
+                              <Link
+                                to="/my-trips"
                                 onClick={() => setIsProfileOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-black/5 dark:bg-white/5 text-black dark:text-white font-bold hover:bg-black/10 dark:hover:bg-white/10 transition-all mb-4"
                               >
                                 <MapPin className="w-4 h-4" />
                                 <span>My Saved Trips</span>
                               </Link>
-                              
+
                               <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-1">Account Details</p>
                               <div className="bg-black/5 dark:bg-black/40 rounded-xl p-3 border border-black/5 dark:border-white/5">
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Email Address</p>
@@ -115,7 +115,7 @@ export function Navbar() {
                               </div>
                             </div>
 
-                            <button 
+                            <button
                               onClick={() => {
                                 logout()
                                 setIsProfileOpen(false)
@@ -132,7 +132,7 @@ export function Navbar() {
                   </div>
                 ) : (
                   <>
-                    <Link to="/login" className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white font-medium transition-colors">
+                    <Link to="/login" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 font-medium transition-colors">
                       Login
                     </Link>
                     <Link to="/signup" className="rounded-full bg-black dark:bg-white px-6 py-2 text-sm font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
@@ -161,7 +161,7 @@ export function Navbar() {
       {/* Mobile menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -172,14 +172,14 @@ export function Navbar() {
               {user && (
                 <Link to="/planner" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Create Trip</Link>
               )}
-              <Link to="/destinations" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10">Destinations</Link>
+              <Link to="/destinations" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Destinations</Link>
               {user && (
-                <Link to="/my-trips" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10">My Trips</Link>
+                <Link to="/my-trips" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">My Trips</Link>
               )}
-              <a href="#" className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10">Blog</a>
+              <a href="#" className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Blog</a>
               {!user && (
                 <div className="pt-4 flex flex-col gap-2">
-                  <Link to="/login" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10">Login</Link>
+                  <Link to="/login" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Login</Link>
                   <Link to="/signup" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium bg-black dark:bg-white text-white dark:text-black text-center">Sign Up</Link>
                 </div>
               )}

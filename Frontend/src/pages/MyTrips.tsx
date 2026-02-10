@@ -3,7 +3,7 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, IndianRupee, Trash2, ExternalLink, Route } from 'lucide-react';
+import { Calendar, MapPin, IndianRupee, Trash2, ExternalLink, Route, Mail, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Activity {
@@ -96,16 +96,26 @@ const MyTrips = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Email State
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [emailInput, setEmailInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
+
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // Radius of the earth in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return (R * c).toFixed(1);
+  };
+
+  const formatCurrency = (amount: string) => {
+    return amount?.replace(/â‚¹/g, '₹') || '';
   };
 
   useEffect(() => {
@@ -123,8 +133,9 @@ const MyTrips = () => {
           return;
         }
 
-        console.log(`Fetching trips from: ${import.meta.env.VITE_API_URL}/api/my-trips`);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/my-trips`, {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        console.log(`Fetching trips from: ${apiUrl}/api/my-trips`);
+        const response = await fetch(`${apiUrl}/api/my-trips`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -137,13 +148,13 @@ const MyTrips = () => {
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error('Failed to fetch trips:', response.status, errorData);
-          
+
           if (response.status === 401) {
             toast.error('Session expired. Please login again.');
             navigate('/login');
             return;
           }
-          
+
           toast.error(`Failed to load trips: ${errorData.message || response.statusText}`);
         }
       } catch (error) {
@@ -163,7 +174,8 @@ const MyTrips = () => {
     const deleteToast = toast.loading('Deleting trip...');
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/delete-trip/${id}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/delete-trip/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -182,22 +194,70 @@ const MyTrips = () => {
     }
   };
 
-  const openInGoogleMaps = (origin?: {lat: number, lng: number}, dest?: {lat: number, lng: number}) => {
+  const openInMap = (origin?: { lat: number, lng: number }, dest?: { lat: number, lng: number }) => {
     if (origin && dest) {
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest.lat},${dest.lng}&travelmode=driving`;
-      window.open(url, '_blank');
+      const url = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${origin.lat}%2C${origin.lng}%3B${dest.lat}%2C${dest.lng}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else if (dest) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${dest.lat},${dest.lng}`;
-      window.open(url, '_blank');
+      const url = `https://www.openstreetmap.org/?mlat=${dest.lat}&mlon=${dest.lng}#map=15/${dest.lat}/${dest.lng}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleOpenEmailModal = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setEmailInput(user?.email || ''); // Default to user's email if available
+    setEmailModalOpen(true);
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailInput || !selectedTrip) {
+      toast.error('Please enter an email address');
+      return;
+    }
+
+    setIsSending(true);
+    const loadingToast = toast.loading('Sending itinerary...');
+
+    try {
+      const token = localStorage.getItem('token');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${apiUrl}/api/send-trip-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: emailInput,
+          tripData: selectedTrip
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Email sent successfully!', { id: loadingToast });
+        setEmailModalOpen(false);
+      } else {
+        throw new Error(data.message || 'Failed to send email');
+      }
+    } catch (error) {
+      console.error('Email error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error sending email';
+      toast.error(errorMessage, { id: loadingToast });
+    } finally {
+      setIsSending(false);
     }
   };
 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col transition-colors duration-300 relative">
       <Navbar />
-      
+
       <main className="grow container mx-auto px-4 py-8 md:py-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
           <div>
@@ -205,13 +265,13 @@ const MyTrips = () => {
             <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg">Your collection of AI-planned adventures.</p>
           </div>
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="flex-1 md:flex-none px-4 md:px-6 py-3 rounded-xl border border-black/10 dark:border-white/10 text-black dark:text-white font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all text-sm md:text-base"
             >
               Refresh
             </button>
-            <button 
+            <button
               onClick={() => navigate('/planner')}
               className="flex-2 md:flex-none px-4 md:px-6 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all text-sm md:text-base"
             >
@@ -229,7 +289,7 @@ const MyTrips = () => {
             <MapPin className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
             <h2 className="text-xl md:text-2xl font-bold mb-2">No trips saved yet</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8 text-sm md:text-base">Start planning your first adventure with our AI agent.</p>
-            <button 
+            <button
               onClick={() => navigate('/planner')}
               className="w-full md:w-auto px-8 py-4 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all"
             >
@@ -246,28 +306,37 @@ const MyTrips = () => {
                       {trip.origin} → {trip.destination}
                     </h3>
                     <div className="flex gap-2 shrink-0">
-                      <button 
-                        onClick={() => openInGoogleMaps(trip.originCoordinates, trip.destinationCoordinates)}
+                      <button
+                        onClick={() => handleOpenEmailModal(trip)}
+                        className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                        title="Send via Email"
+                      >
+                        <Mail className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => openInMap(trip.originCoordinates, trip.destinationCoordinates)}
                         className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-all"
-                        title="View Route on Google Maps"
+                        title="View Route on Map"
                       >
                         <ExternalLink className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteTrip(trip._id)}
                         className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-red-500/20 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all"
+                        title="Delete Trip"
+                        aria-label="Delete Trip"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-3 md:gap-4 text-xs md:text-sm text-gray-500 dark:text-gray-400">
                     <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md"><Calendar className="w-3.5 h-3.5 md:w-4 md:h-4" /> {trip.duration}</span>
-                    <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md"><IndianRupee className="w-3.5 h-3.5 md:w-4 md:h-4" /> {trip.budget}</span>
+                    <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md"><IndianRupee className="w-3.5 h-3.5 md:w-4 md:h-4" /> {formatCurrency(trip.budget)}</span>
                     {trip.originCoordinates && trip.destinationCoordinates && (
                       <span className="flex items-center gap-1 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md">
-                        <Route className="w-3.5 h-3.5 md:w-4 md:h-4" /> 
+                        <Route className="w-3.5 h-3.5 md:w-4 md:h-4" />
                         {calculateDistance(
                           trip.originCoordinates.lat,
                           trip.originCoordinates.lng,
@@ -293,7 +362,7 @@ const MyTrips = () => {
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => navigate(`/planner`, { state: { savedTrip: trip } })}
                     className="w-full py-3 md:py-4 rounded-xl bg-black/5 dark:bg-white/10 text-black dark:text-white font-bold hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all mt-4 text-sm md:text-base"
                   >
@@ -306,9 +375,63 @@ const MyTrips = () => {
         )}
       </main>
 
+      {/* Email Modal */}
+      {emailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-white/10 relative animation-fadeIn">
+            <button
+              onClick={() => setEmailModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+              title="Close Modal"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-6">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+                <Mail className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold mb-1">Send Itinerary via Email</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Enter your email address to receive the full trip plan for {selectedTrip?.origin} to {selectedTrip?.destination}.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 text-black dark:text-white focus:border-blue-500 dark:focus:border-blue-500 outline-none transition-all"
+                />
+              </div>
+
+              <button
+                onClick={handleSendEmail}
+                disabled={isSending || !emailInput}
+                className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSending ? (
+                  <>Sending...</>
+                ) : (
+                  <>Send Trip Plan</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
 };
+
 
 export default MyTrips;

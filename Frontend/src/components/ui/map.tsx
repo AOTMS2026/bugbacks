@@ -14,8 +14,8 @@ interface MapProps {
   loop?: boolean;
 }
 
-export function WorldMap({ 
-  dots = [], 
+export function WorldMap({
+  dots = [],
   lineColor = "#0ea5e9",
   showLabels = true,
   animationDuration = 2,
@@ -82,7 +82,7 @@ export function WorldMap({
             <stop offset="95%" stopColor={lineColor} stopOpacity="1" />
             <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
-          
+
           <filter id="glow">
             <feMorphology operator="dilate" radius="0.5" />
             <feGaussianBlur stdDeviation="1" result="coloredBlur" />
@@ -96,12 +96,12 @@ export function WorldMap({
         {dots.map((dot, i) => {
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
-          
+
           // Calculate keyframe times for this specific path
           const startTime = (i * staggerDelay) / fullCycleDuration;
           const endTime = (i * staggerDelay + animationDuration) / fullCycleDuration;
           const resetTime = totalAnimationTime / fullCycleDuration;
-          
+
           return (
             <g key={`path-group-${i}`}>
               <motion.path
@@ -127,16 +127,18 @@ export function WorldMap({
                   ease: "easeInOut",
                 }}
               />
-              
+
               {loop && (
                 <motion.circle
                   r="4"
                   fill={lineColor}
-                  initial={{ offsetDistance: "0%", opacity: 0 }}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  initial={{ "--offset-distance": "0%", opacity: 0 } as any}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   animate={{
-                    offsetDistance: [null, "0%", "100%", "100%", "100%"],
+                    "--offset-distance": [null, "0%", "100%", "100%", "100%"],
                     opacity: [0, 0, 1, 0, 0],
-                  }}
+                  } as any}
                   transition={{
                     duration: fullCycleDuration,
                     times: [0, startTime, endTime, resetTime, 1],
@@ -146,6 +148,7 @@ export function WorldMap({
                   }}
                   style={{
                     offsetPath: `path('${createCurvedPath(startPoint, endPoint)}')`,
+                    offsetDistance: "var(--offset-distance)",
                   }}
                 />
               )}
@@ -156,7 +159,7 @@ export function WorldMap({
         {dots.map((dot, i) => {
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
-          
+
           return (
             <g key={`points-group-${i}`}>
               {/* Start Point */}
@@ -201,7 +204,7 @@ export function WorldMap({
                     />
                   </circle>
                 </motion.g>
-                
+
                 {showLabels && dot.start.label && (
                   <motion.g
                     initial={{ opacity: 0, y: 5 }}
@@ -225,7 +228,7 @@ export function WorldMap({
                   </motion.g>
                 )}
               </g>
-              
+
               {/* End Point */}
               <g key={`end-${i}`}>
                 <motion.g
@@ -268,7 +271,7 @@ export function WorldMap({
                     />
                   </circle>
                 </motion.g>
-                
+
                 {showLabels && dot.end.label && (
                   <motion.g
                     initial={{ opacity: 0, y: 5 }}
@@ -296,7 +299,7 @@ export function WorldMap({
           );
         })}
       </svg>
-      
+
       {/* Mobile Tooltip */}
       <AnimatePresence>
         {hoveredLocation && (
