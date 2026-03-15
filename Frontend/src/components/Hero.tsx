@@ -1,7 +1,10 @@
 import { motion } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 import { Globe } from "@/components/ui/globe"
 
 export function Hero() {
+  const navigate = useNavigate()
+
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-white dark:bg-black flex flex-col items-center justify-center transition-colors duration-300 py-20 md:py-0">
       {/* Information Section - Positioned at the top/middle */}
@@ -22,7 +25,8 @@ export function Hero() {
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
               <button
-                className="w-full sm:w-auto rounded-full bg-black dark:bg-white px-10 py-4 text-base font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-lg"
+                onClick={() => navigate("/planner")}
+                className="w-full sm:w-auto rounded-full bg-black dark:bg-white px-10 py-4 text-base font-bold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-lg cursor-pointer"
               >
                 Plan My Trip
               </button>
