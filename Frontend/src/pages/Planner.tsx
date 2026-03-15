@@ -5,6 +5,7 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
+import { CostComparison } from '../components/CostComparison';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker as LeafletMarker, Popup, Polyline, Circle, useMap } from 'react-leaflet';
@@ -1476,6 +1477,11 @@ const Planner = () => {
                     </div>
                   </div>
                 )}
+
+                {/* --- Cost Estimation & Comparison Module --- */}
+                <div className="pt-8 border-t border-black/10 dark:border-white/10">
+                  <CostComparison tripData={itinerary} />
+                </div>
 
                 {/* Booking & Checklist Sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

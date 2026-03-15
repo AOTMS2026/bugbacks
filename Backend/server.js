@@ -6,6 +6,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Trip = require('./models/Trip');
+const TripMember = require('./models/TripMember');
+const Suggestion = require('./models/Suggestion');
+const Expense = require('./models/Expense');
+const CostEstimation = require('./models/CostEstimation');
+const nodemailer = require('nodemailer');
 const { OpenAI } = require('openai');
 
 dotenv.config();
@@ -311,6 +316,17 @@ app.post('/api/save-trip', auth, async (req, res) => {
 
     const savedTrip = await newTrip.save();
     console.log('Trip saved successfully with ID:', savedTrip._id);
+
+    // Add owner to TripMember
+    const user = await User.findById(req.user.id);
+    const newMember = new TripMember({
+      tripId: savedTrip._id,
+      userId: req.user.id,
+      email: user.email,
+      role: 'owner'
+    });
+    await newMember.save();
+
     res.status(201).json(savedTrip);
   } catch (err) {
     console.error('Error in /api/save-trip:', err);
@@ -321,9 +337,28 @@ app.post('/api/save-trip', auth, async (req, res) => {
 // Get User Trips Route
 app.get('/api/my-trips', auth, async (req, res) => {
   try {
-    console.log('Fetching trips for user ID:', req.user.id);
-    const trips = await Trip.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    console.log(`Found ${trips.length} trips for user`);
+    const user = await User.findById(req.user.id);
+    console.log('Fetching collective trips for user Email:', user.email);
+    
+    // Find all trips where user is explicitly a member via userId OR via email string
+    const memberTrips = await TripMember.find({ 
+      $or: [
+        { userId: req.user.id },
+        { email: { $regex: new RegExp(`^${user.email}$`, 'i') } }
+      ]
+    }).select('tripId');
+    
+    const tripIds = memberTrips.map(m => m.tripId);
+    
+    // Also include trips where the user is the original creator
+    const trips = await Trip.find({ 
+      $or: [
+        { _id: { $in: tripIds } },
+        { userId: req.user.id }
+      ]
+    }).sort({ createdAt: -1 });
+    
+    console.log(`Found ${trips.length} collective trips for user`);
     res.json(trips);
   } catch (err) {
     console.error('Error fetching trips:', err);
@@ -341,10 +376,6 @@ app.delete('/api/delete-trip/:id', auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-const nodemailer = require('nodemailer');
-
-// ... existing imports ...
 
 // Send Trip Email Route
 app.post('/api/send-trip-email', auth, async (req, res) => {
@@ -692,3 +723,308 @@ app.post('/api/send-trip-email', auth, async (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+
+// --- Trip Collaboration Routes ---
+
+// Get Trip Collective Members (using both ID and Email)
+app.get('/api/trips/:tripId/members', auth, async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(tripId)) {
+        return res.status(400).json({ message: 'Invalid Trip ID format' });
+    }
+    const members = await TripMember.find({ tripId });
+    
+    // Process members to ensure we have a name even for non-registered users
+    const results = await Promise.all(members.map(async (m) => {
+      let fullName = m.email.split('@')[0];
+      let hasJoined = false;
+      
+      const registeredUser = await User.findOne({ email: m.email });
+      if (registeredUser) {
+        fullName = registeredUser.fullName;
+        hasJoined = true;
+      }
+      
+      return {
+        _id: m._id,
+        email: m.email,
+        role: m.role,
+        fullName,
+        hasJoined
+      };
+    }));
+    
+    res.json(results);
+  } catch (err) {
+    console.error('Error in /api/trips/:tripId/members:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Invite Member (NO restriction on registration)
+app.post('/api/trips/:tripId/invite', auth, async (req, res) => {
+  try {
+    const { email } = req.body;
+    const { tripId } = req.params;
+
+    if (!email) return res.status(400).json({ message: 'Email required' });
+    if (!mongoose.Types.ObjectId.isValid(tripId)) {
+      return res.status(400).json({ message: 'Invalid Trip ID format' });
+    }
+
+    // 1. Check if already a member in this trip (case-insensitive)
+    const existingMember = await TripMember.findOne({ tripId, email: { $regex: new RegExp(`^${email}$`, 'i') } });
+    if (existingMember) {
+      return res.status(400).json({ message: 'User is already invited or a member' });
+    }
+
+    // 2. Fetch inviter details
+    const inviter = await User.findById(req.user.id);
+    const trip = await Trip.findById(tripId);
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+
+    // 3. Create placeholder TripMember
+    const invitedUser = await User.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
+    
+    const newMember = new TripMember({
+      tripId,
+      userId: invitedUser ? invitedUser._id : null,
+      email: email.toLowerCase(),
+      role: 'member'
+    });
+    await newMember.save();
+
+    // 4. Send Email Invitation
+    try {
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        });
+
+        await transporter.sendMail({
+          from: `AI Travel Planner <${process.env.EMAIL_USER}>`,
+          to: email,
+          subject: `Collaboration Invite: ${inviter.fullName} invited you to a trip!`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+              <h2 style="color: #2563eb;">Trip Invitation</h2>
+              <p><strong>${inviter.fullName}</strong> has invited you to collaborate on their trip to <strong>${trip.destination}</strong>.</p>
+              <p>You can now view this trip in your dashboard if you have an account, or sign up to join the planning!</p>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" style="display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">Go to My Trips</a>
+            </div>
+          `
+        });
+      }
+    } catch (mailErr) {
+      console.error('Nodemailer error (skipping email send):', mailErr.message);
+    }
+
+    res.status(201).json({ 
+      message: 'Invitation successful!', 
+      email: email.toLowerCase()
+    });
+  } catch (err) {
+    console.error('Error in /api/trips/:tripId/invite:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Suggestions Routes
+app.get('/api/trips/:tripId/suggestions', auth, async (req, res) => {
+  try {
+    const suggestions = await Suggestion.find({ tripId: req.params.tripId })
+      .populate('userId', 'fullName email')
+      .sort({ createdAt: -1 });
+    res.json(suggestions);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.post('/api/trips/:tripId/suggestions', auth, async (req, res) => {
+  try {
+    const { text, category } = req.body;
+    const newSuggestion = new Suggestion({
+      tripId: req.params.tripId,
+      userId: req.user.id,
+      text,
+      category
+    });
+    await newSuggestion.save();
+    
+    const populated = await newSuggestion.populate('userId', 'fullName');
+    res.status(201).json(populated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// --- Expense Tracker Routes ---
+
+// Add Expense
+app.post('/api/expenses', auth, async (req, res) => {
+  try {
+    const { tripId, category, description, amount, date } = req.body;
+
+    if (!tripId || !amount) {
+      return res.status(400).json({ message: 'Trip ID and amount are required' });
+    }
+
+    const newExpense = new Expense({
+      tripId,
+      userId: req.user.id,
+      category,
+      description,
+      amount: Number(amount),
+      date
+    });
+
+    const savedExpense = await newExpense.save();
+    res.status(201).json(savedExpense);
+  } catch (err) {
+    console.error('Error adding expense:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get Trip Expenses
+app.get('/api/expenses/:tripId', auth, async (req, res) => {
+  try {
+    const expenses = await Expense.find({ 
+      tripId: req.params.tripId, 
+      userId: req.user.id 
+    }).sort({ date: -1 });
+    res.json(expenses);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Update Expense
+app.put('/api/expenses/:id', auth, async (req, res) => {
+  try {
+    const { category, description, amount, date } = req.body;
+    const expense = await Expense.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      { category, description, amount: Number(amount), date },
+      { new: true }
+    );
+    if (!expense) return res.status(404).json({ message: 'Expense not found' });
+    res.json(expense);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete Expense
+app.delete('/api/expenses/:id', auth, async (req, res) => {
+  try {
+    const expense = await Expense.findOneAndDelete({ 
+      _id: req.params.id, 
+      userId: req.user.id 
+    });
+    if (!expense) return res.status(404).json({ message: 'Expense not found' });
+    res.json({ message: 'Expense deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get Trip Budget Analysis
+app.get('/api/expenses/analysis/:tripId', auth, async (req, res) => {
+  try {
+    const trip = await Trip.findOne({ _id: req.params.tripId, userId: req.user.id });
+    if (!trip) return res.status(404).json({ message: 'Trip not found' });
+
+    const expenses = await Expense.find({ tripId: req.params.tripId, userId: req.user.id });
+    
+    const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
+    // Parse trip budget (removing currency symbols and commas)
+    const budgetStr = trip.budget || "0";
+    const budgetValue = parseFloat(budgetStr.replace(/[^0-9.]/g, '')) || 0;
+    
+    const remainingBudget = budgetValue - totalSpent;
+    const utilizationPercentage = budgetValue > 0 ? (totalSpent / budgetValue) * 100 : 0;
+
+    // Category breakdown
+    const breakdown = {
+      Transport: 0,
+      Hotel: 0,
+      Food: 0,
+      Activities: 0,
+      Shopping: 0,
+      Other: 0
+    };
+
+    expenses.forEach(exp => {
+      if (breakdown[exp.category] !== undefined) {
+        breakdown[exp.category] += exp.amount;
+      } else {
+        breakdown.Other += exp.amount;
+      }
+    });
+
+    res.json({
+      totalBudget: budgetValue,
+      totalSpent,
+      remainingBudget,
+      utilizationPercentage,
+      categoryBreakdown: breakdown
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// --- Cost Estimation & Comparison Routes ---
+
+// Save Cost Estimation
+app.post('/api/cost-estimation', auth, async (req, res) => {
+  try {
+    const { 
+      tripId, 
+      transportOptions, 
+      hotelOptions, 
+      breakdown, 
+      totalEstimatedCost, 
+      userBudget 
+    } = req.body;
+
+    const status = totalEstimatedCost <= userBudget ? 'Within Budget' : 'Exceeds Budget';
+
+    const costEstimation = new CostEstimation({
+      tripId,
+      userId: req.user.id,
+      transportOptions,
+      hotelOptions,
+      breakdown,
+      totalEstimatedCost,
+      userBudget,
+      status
+    });
+
+    const savedEstimation = await costEstimation.save();
+    res.status(201).json(savedEstimation);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get Trip Cost Estimation
+app.get('/api/cost-estimation/:tripId', auth, async (req, res) => {
+  try {
+    const estimation = await CostEstimation.findOne({ 
+      tripId: req.params.tripId, 
+      userId: req.user.id 
+    }).sort({ createdAt: -1 });
+    res.json(estimation);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});

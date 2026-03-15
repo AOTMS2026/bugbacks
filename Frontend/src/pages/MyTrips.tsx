@@ -3,8 +3,11 @@ import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, IndianRupee, Trash2, ExternalLink, Route, Mail, X } from 'lucide-react';
+import { Calendar, MapPin, IndianRupee, Trash2, ExternalLink, Route, Mail, X, Wallet } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ExpenseTracker } from '../components/ExpenseTracker';
+import { TripCollaboration } from '../components/TripCollaboration';
+import { Users } from 'lucide-react';
 
 interface Activity {
   day: number;
@@ -98,6 +101,8 @@ const MyTrips = () => {
 
   // Email State
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [expenseModalOpen, setExpenseModalOpen] = useState(false);
+  const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -314,6 +319,21 @@ const MyTrips = () => {
                         <Mail className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => { setSelectedTrip(trip); setCollabModalOpen(true); }}
+                        className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold flex items-center gap-1"
+                        title="Collaborate with Friends"
+                      >
+                        <Users className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => { setSelectedTrip(trip); setExpenseModalOpen(true); }}
+                        className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all font-bold flex items-center gap-1"
+                        title="Expense Tracker"
+                      >
+                        <Wallet className="w-4 h-4" />
+                        <span className="text-[10px] hidden sm:block">EXPENSES</span>
+                      </button>
+                      <button
                         onClick={() => openInMap(trip.originCoordinates, trip.destinationCoordinates)}
                         className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-all"
                         title="View Route on Map"
@@ -426,6 +446,45 @@ const MyTrips = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Expense Tracker Modal */}
+      {expenseModalOpen && selectedTrip && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-950 rounded-3xl w-full max-w-4xl p-6 md:p-8 shadow-2xl border border-black/5 dark:border-white/10 relative my-8">
+            <button
+              onClick={() => setExpenseModalOpen(false)}
+              className="absolute top-6 right-6 text-zinc-500 hover:text-black dark:hover:text-white transition-colors bg-zinc-100 dark:bg-zinc-900 p-2 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-8 pr-12">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter">EXPENSE TRACKER</h2>
+              </div>
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                Manage your spending for trip from <span className="text-black dark:text-white font-bold">{selectedTrip.origin}</span> to <span className="text-black dark:text-white font-bold">{selectedTrip.destination}</span>.
+              </p>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              <ExpenseTracker tripId={selectedTrip._id} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Trip Collaboration Drawer */}
+      {collabModalOpen && selectedTrip && (
+        <TripCollaboration 
+          tripId={selectedTrip._id} 
+          isOpen={collabModalOpen} 
+          onClose={() => setCollabModalOpen(false)} 
+        />
       )}
 
       <Footer />
