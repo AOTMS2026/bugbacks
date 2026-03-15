@@ -26,7 +26,7 @@ app.use(cors({
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENAI_ROTER_API_KEY || process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY,
   defaultHeaders: {
     "HTTP-Referer": "http://localhost:5000", // Optional, for OpenRouter rankings
     "X-Title": "AI Travel Planner", // Optional
