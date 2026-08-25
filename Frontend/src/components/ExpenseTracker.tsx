@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit2, Filter, IndianRupee, PieChart, TrendingDown, TrendingUp, X, Check, Save } from 'lucide-react';
+import { Plus, Trash2, Edit2, IndianRupee, PieChart, TrendingDown, X, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Expense {

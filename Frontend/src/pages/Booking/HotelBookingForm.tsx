@@ -2,7 +2,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
-import { Building2, Calendar, Users, CheckCircle2, ArrowRight, ArrowLeft, MapPin } from "lucide-react"
+import { Building2, CheckCircle2, Users, ArrowRight, ArrowLeft } from "lucide-react"
 import { useAuth } from "../../context/AuthContext"
 import { Navbar } from "../../components/Navbar"
 import { Footer } from "../../components/Footer"
@@ -121,7 +121,7 @@ export function HotelBookingForm() {
       x: 0,
       opacity: 1,
       scale: 1,
-      transition: { type: "spring", stiffness: 300, damping: 30 }
+      transition: { type: "spring" as const, stiffness: 300, damping: 30 }
     },
     exit: (direction: number) => ({
       x: direction < 0 ? 100 : -100,

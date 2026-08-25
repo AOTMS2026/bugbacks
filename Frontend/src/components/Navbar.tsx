@@ -1,4 +1,4 @@
-import { Menu, X, User, LogOut, ChevronDown, Sparkles, Sun, Moon, MapPin } from "lucide-react"
+import { Menu, X, User, LogOut, ChevronDown, Sparkles, Sun, Moon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"

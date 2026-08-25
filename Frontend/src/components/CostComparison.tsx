@@ -1,27 +1,12 @@
-import React from 'react';
 import { IndianRupee, MapPin, Star, AlertTriangle, CheckCircle, Car, Bus, Train, Plane, Loader2 } from 'lucide-react';
 
-interface TransportOption {
-  mode: string;
-  cost: number;
-  duration: string;
-  pros: string;
-  cons: string;
-}
+
 
 interface HotelOption {
   name: string;
   costPerNight: number;
   rating: number;
   distanceFromCenter: string;
-}
-
-interface CostBreakdown {
-  transport: number;
-  hotel: number;
-  food: number;
-  activities: number;
-  other: number;
 }
 
 interface CostEstimationProps {

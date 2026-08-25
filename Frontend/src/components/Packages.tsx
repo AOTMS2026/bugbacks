@@ -1,4 +1,4 @@
-import { useState } from "react"
+
 import { motion } from "framer-motion"
 import { Globe, MapPin, Heart, Users, Compass, Mountain, Map, Briefcase, ArrowRight } from "lucide-react"
 import { useNavigate } from "react-router-dom"
