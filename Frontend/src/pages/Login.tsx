@@ -9,15 +9,51 @@ export function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [isResetMode, setIsResetMode] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setSuccess("")
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+    if (isResetMode) {
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters long")
+        return
+      }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match")
+        return
+      }
+      try {
+        const response = await fetch(`${apiUrl}/api/reset-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, newPassword: password }),
+        })
+        const data = await response.json()
+        if (response.ok) {
+          setSuccess("Password reset successfully. You can now log in.")
+          setIsResetMode(false)
+          setPassword("")
+          setConfirmPassword("")
+        } else {
+          setError(data.message || "Failed to reset password")
+        }
+      } catch (err) {
+        console.error(err)
+        setError("Something went wrong. Please try again.")
+      }
+      return
+    }
+
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,12 +82,17 @@ export function Login() {
           className="w-full max-w-md"
         >
           <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-black dark:text-white mb-2 font-oswald uppercase">Welcome Back</h1>
-          <p className="text-gray-600 dark:text-gray-400">Enter your details to access your travel plans</p>
+          <h1 className="text-3xl font-bold text-black dark:text-white mb-2 font-oswald uppercase">
+            {isResetMode ? "Reset Password" : "Welcome Back"}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {isResetMode ? "Enter your email and new password" : "Enter your details to access your travel plans"}
+          </p>
         </div>
 
         <div className="bg-gray-50 dark:bg-[#1a1a1a] border border-black/5 dark:border-white/10 rounded-4xl p-8 shadow-2xl">
           {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+          {success && <p className="text-green-500 text-sm mb-4 text-center">{success}</p>}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1">Email Address</label>
@@ -70,8 +111,12 @@ export function Login() {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Password</label>
-                <a href="#" className="text-xs text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white transition-colors">Forgot password?</a>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">{isResetMode ? "New Password" : "Password"}</label>
+                {!isResetMode && (
+                  <button type="button" onClick={() => { setIsResetMode(true); setError(""); setSuccess(""); }} className="text-xs text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white transition-colors">
+                    Forgot password?
+                  </button>
+                )}
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
@@ -81,6 +126,7 @@ export function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  minLength={8}
                   className="w-full bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl py-4 pl-12 pr-12 text-black dark:text-white focus:border-black/30 dark:focus:border-white/30 focus:ring-0 transition-all outline-none"
                 />
                 <button
@@ -93,10 +139,34 @@ export function Login() {
               </div>
             </div>
 
+            {isResetMode && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400 ml-1">Confirm New Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={8}
+                    className="w-full bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl py-4 pl-12 pr-12 text-black dark:text-white focus:border-black/30 dark:focus:border-white/30 focus:ring-0 transition-all outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
             <button type="submit" className="w-full bg-black dark:bg-white text-white dark:text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-200 transition-all group">
-              Sign In
+              {isResetMode ? "Reset Password" : "Sign In"}
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </button>
+            
+            {isResetMode && (
+              <button type="button" onClick={() => { setIsResetMode(false); setError(""); setSuccess(""); }} className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors text-center mt-2">
+                Back to Sign In
+              </button>
+            )}
           </form>
 
           <div className="mt-8 pt-8 border-t border-black/5 dark:border-white/5 text-center">

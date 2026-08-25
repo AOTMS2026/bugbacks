@@ -17,6 +17,12 @@ export function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      return
+    }
+
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/api/signup`, {
@@ -94,6 +100,7 @@ export function Signup() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  minLength={8}
                   className="w-full bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl py-4 pl-12 pr-12 text-black dark:text-white focus:border-black/30 dark:focus:border-white/30 focus:ring-0 transition-all outline-none"
                 />
                 <button
