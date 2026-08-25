@@ -55,10 +55,10 @@ export function Navbar() {
                 </>
               )}
               <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
-                <a href="#about" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">About</a>
+                <a href="/#about" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">About</a>
               </motion.div>
               <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
-                <a href="#specials" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1">
+                <a href="/#specials" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-indigo-500" />
                   Specials
                 </a>
@@ -180,8 +180,8 @@ export function Navbar() {
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Profile</Link>
                 </>
               )}
-              <a href="#about" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">About</a>
-              <a href="#specials" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2">
+              <a href="/#about" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">About</a>
+              <a href="/#specials" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-500" />
                 Specials
               </a>
