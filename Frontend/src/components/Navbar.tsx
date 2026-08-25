@@ -22,10 +22,10 @@ export function Navbar() {
   }, [])
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 ${
+    <nav className={`fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-500 ${
       isScrolled 
-        ? "bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-black/10 dark:border-white/10 shadow-lg" 
-        : "bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-transparent"
+        ? "bg-white/70 dark:bg-black/70 backdrop-blur-2xl border-b border-black/10 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]" 
+        : "bg-white/30 dark:bg-black/30 backdrop-blur-xl border-b border-transparent"
     }`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">

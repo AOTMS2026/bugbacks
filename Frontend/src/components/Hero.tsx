@@ -3,7 +3,7 @@ import { Globe } from "@/components/ui/globe"
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-white dark:bg-black flex flex-col items-center justify-center transition-colors duration-300 py-20 md:py-0">
+    <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-orange-200 via-white to-blue-200 dark:from-[#00294f] dark:via-slate-900 dark:to-orange-900/60 flex flex-col items-center justify-center transition-colors duration-500 py-20 md:py-0 animate-gradient">
       {/* Information Section - Positioned at the top/middle */}
       <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20">
         <div className="flex flex-col items-center text-center">
