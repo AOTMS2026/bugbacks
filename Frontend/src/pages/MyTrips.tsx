@@ -266,7 +266,7 @@ const MyTrips = () => {
       <main className="grow container mx-auto px-4 py-8 md:py-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">My Saved Trips</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">Trip Details</h1>
             <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg">Your collection of AI-planned adventures.</p>
           </div>
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
@@ -293,13 +293,7 @@ const MyTrips = () => {
           <div className="text-center py-16 md:py-24 px-6 bg-gray-50 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-3xl">
             <MapPin className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
             <h2 className="text-xl md:text-2xl font-bold mb-2">No trips saved yet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 text-sm md:text-base">Start planning your first adventure with our AI agent.</p>
-            <button
-              onClick={() => navigate('/planner')}
-              className="w-full md:w-auto px-8 py-4 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all"
-            >
-              Create Your First Trip
-            </button>
+            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">Start planning your first adventure with our AI agent.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">

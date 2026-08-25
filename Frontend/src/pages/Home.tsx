@@ -1,9 +1,12 @@
 import { Navbar } from "../components/Navbar"
 import { Hero } from "../components/Hero"
+import { AboutSection } from "../components/AboutSection"
+import { SpecialTrips } from "../components/SpecialTrips"
+import { Packages } from "../components/Packages"
+import { Services } from "../components/Services"
 import { Footer } from "../components/Footer"
 import { motion } from "framer-motion"
 import { Brain, Map, Wallet, Coffee, ArrowRight } from "lucide-react"
-import { Link } from "react-router-dom"
 
 export function Home() {
   const containerVariants = {
@@ -82,8 +85,20 @@ export function Home() {
       {/* HERO SECTION - Preserved as requested */}
       <Hero />
 
+      {/* NEW ABOUT SECTION */}
+      <AboutSection />
+
+      {/* NEW SPECIAL TRIPS SECTION */}
+      <SpecialTrips />
+
+      {/* NEW PACKAGES SECTION */}
+      <Packages />
+
+      {/* NEW SERVICES SECTION */}
+      <Services />
+
       {/* FEATURES SECTION */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section id="how-it-works" className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -171,11 +186,11 @@ export function Home() {
               </div>
 
               <div className="mt-12">
-                <Link to="/planner">
+                <a href="#packages">
                   <button className="px-8 py-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-all flex items-center gap-2 group">
-                    Start Planning <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    View Our Packages <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
-                </Link>
+                </a>
               </div>
             </motion.div>
 
@@ -247,7 +262,7 @@ export function Home() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-6xl font-black mb-6"
+            className="text-4xl md:text-6xl font-bold mb-6 font-['Oswald'] uppercase tracking-tighter leading-tight"
           >
             Ready for your next <br />
             <span className="text-indigo-600 dark:text-indigo-400">Great Adventure?</span>
@@ -267,11 +282,11 @@ export function Home() {
             viewport={{ once: true }}
             transition={{ delay: 0.4 }}
           >
-            <Link to="/planner">
+            <a href="#packages">
               <button className="px-12 py-5 rounded-full bg-indigo-600 text-white font-bold text-xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:-translate-y-1">
-                Draft My Itinerary Free
+                Explore All Packages
               </button>
-            </Link>
+            </a>
           </motion.div>
         </div>
       </section>

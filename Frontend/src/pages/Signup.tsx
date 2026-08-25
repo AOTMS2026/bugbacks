@@ -1,8 +1,9 @@
 import { motion } from "framer-motion"
-import { Globe, Mail, Lock, User, ArrowRight } from "lucide-react"
+import { Mail, Lock, User, ArrowRight } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
+import { Navbar } from "../components/Navbar"
 
 export function Signup() {
   const [fullName, setFullName] = useState("")
@@ -36,17 +37,15 @@ export function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-4 py-20 transition-colors duration-300">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        <div className="text-center mb-10">
-          <div className="flex justify-center items-center gap-2 mb-6">
-            <Globe className="h-10 w-10 text-black dark:text-white" />
-            <span className="text-3xl font-bold tracking-tighter text-black dark:text-white font-oswald uppercase">Travel<span className="text-gray-400 dark:text-gray-500">Planner</span></span>
-          </div>
+    <div className="min-h-screen bg-white dark:bg-black flex flex-col transition-colors duration-300">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center px-4 py-20 pt-28">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md"
+        >
+          <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-black dark:text-white mb-2 font-oswald uppercase">Create Account</h1>
           <p className="text-gray-600 dark:text-gray-400">Start planning your next adventure today</p>
         </div>
@@ -114,7 +113,8 @@ export function Signup() {
             </p>
           </div>
         </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -10,6 +10,9 @@ const TripMember = require('./models/TripMember');
 const Suggestion = require('./models/Suggestion');
 const Expense = require('./models/Expense');
 const CostEstimation = require('./models/CostEstimation');
+const Inquiry = require('./models/Inquiry');
+const HotelBooking = require('./models/HotelBooking');
+const FlightReservation = require('./models/FlightReservation');
 const nodemailer = require('nodemailer');
 const { OpenAI } = require('openai');
 
@@ -75,6 +78,158 @@ app.post('/api/login', async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '7d' });
     res.json({ token, user: { id: user._id, fullName: user.fullName, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Inquiry Route
+app.post('/api/inquiries', async (req, res) => {
+  try {
+    const { fullName, email, phoneNumber, serviceRequested, destination, travelDates, numberOfTravelers, specialRequests } = req.body;
+    
+    const newInquiry = new Inquiry(req.body);
+    await newInquiry.save();
+    res.status(201).json({ message: 'Inquiry submitted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/inquiries/user/:userId', async (req, res) => {
+  try {
+    const inquiries = await Inquiry.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    res.json(inquiries);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.put('/api/inquiries/:id', async (req, res) => {
+  try {
+    const { destination, travelDates, numberOfTravelers, specialRequests } = req.body;
+    const updatedInquiry = await Inquiry.findByIdAndUpdate(
+      req.params.id,
+      { destination, travelDates, numberOfTravelers, specialRequests },
+      { new: true }
+    );
+    
+    if (!updatedInquiry) {
+      return res.status(404).json({ message: 'Inquiry not found' });
+    }
+    
+    res.json({ message: 'Inquiry updated successfully', inquiry: updatedInquiry });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Hotel Booking Route
+app.post('/api/hotel-bookings', async (req, res) => {
+  try {
+    const { userId, destination, checkInDate, checkOutDate, guests, roomType, specialRequests } = req.body;
+    
+    if (!userId) {
+       return res.status(401).json({ message: 'User ID is required' });
+    }
+
+    const newBooking = new HotelBooking({
+      userId,
+      destination,
+      checkInDate,
+      checkOutDate,
+      guests,
+      roomType,
+      specialRequests
+    });
+    
+    await newBooking.save();
+    res.status(201).json({ message: 'Hotel booking request submitted successfully', booking: newBooking });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get User's Hotel Bookings
+app.get('/api/hotel-bookings/user/:userId', async (req, res) => {
+  try {
+    const bookings = await HotelBooking.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Update Hotel Booking
+app.put('/api/hotel-bookings/:id', async (req, res) => {
+  try {
+    const { destination, checkInDate, checkOutDate, guests, roomType, specialRequests } = req.body;
+    const updatedBooking = await HotelBooking.findByIdAndUpdate(
+      req.params.id,
+      { destination, checkInDate, checkOutDate, guests, roomType, specialRequests },
+      { new: true }
+    );
+    
+    if (!updatedBooking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    res.json({ message: 'Booking updated successfully', booking: updatedBooking });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Flight Reservation Routes
+app.post('/api/flight-reservations', async (req, res) => {
+  try {
+    const { userId, departureCity, arrivalCity, departureDate, returnDate, passengers, cabinClass, specialRequests } = req.body;
+    
+    if (!userId) {
+       return res.status(401).json({ message: 'User ID is required' });
+    }
+
+    const newFlight = new FlightReservation({
+      userId,
+      departureCity,
+      arrivalCity,
+      departureDate,
+      returnDate,
+      passengers,
+      cabinClass,
+      specialRequests
+    });
+    
+    await newFlight.save();
+    res.status(201).json({ message: 'Flight reservation submitted successfully', reservation: newFlight });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/flight-reservations/user/:userId', async (req, res) => {
+  try {
+    const flights = await FlightReservation.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    res.json(flights);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.put('/api/flight-reservations/:id', async (req, res) => {
+  try {
+    const { departureCity, arrivalCity, departureDate, returnDate, passengers, cabinClass, specialRequests } = req.body;
+    const updatedFlight = await FlightReservation.findByIdAndUpdate(
+      req.params.id,
+      { departureCity, arrivalCity, departureDate, returnDate, passengers, cabinClass, specialRequests },
+      { new: true }
+    );
+    
+    if (!updatedFlight) {
+      return res.status(404).json({ message: 'Flight reservation not found' });
+    }
+    
+    res.json({ message: 'Flight reservation updated successfully', reservation: updatedFlight });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

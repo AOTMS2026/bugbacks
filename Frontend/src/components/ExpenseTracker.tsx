@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Edit2, IndianRupee, PieChart, TrendingDown, X, Save } from "lucide-react";
-import toast from "react-hot-toast";
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, Edit2, Filter, IndianRupee, PieChart, TrendingDown, TrendingUp, X, Check, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Expense {
   _id: string;
@@ -18,7 +18,7 @@ interface Analysis {
   categoryBreakdown: Record<string, number>;
 }
 
-const CATEGORIES = ["Transport", "Hotel", "Food", "Activities", "Shopping", "Other"];
+const CATEGORIES = ['Transport', 'Hotel', 'Food', 'Activities', 'Shopping', 'Other'];
 
 export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -27,92 +27,90 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   
+  // Form State
   const [formData, setFormData] = useState({
-    category: "Other",
-    description: "",
-    amount: "",
-    date: new Date().toISOString().split("T")[0]
+    category: 'Other',
+    description: '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0]
   });
 
-  const apiUrl = (import.meta as any).env.VITE_API_URL || "http://localhost:8000";
-  const token = localStorage.getItem("token");
-
-  const fetchExpenses = useCallback(async () => {
-    try {
-      const res = await fetch(`${apiUrl}/api/expenses/${tripId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setExpenses(data);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load expenses");
-    }
-  }, [apiUrl, token, tripId]);
-
-  const fetchAnalysis = useCallback(async () => {
-    try {
-      const res = await fetch(`${apiUrl}/api/expenses/analysis/${tripId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setAnalysis(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl, token, tripId]);
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchExpenses();
     fetchAnalysis();
-  }, [fetchExpenses, fetchAnalysis]);
+  }, [tripId]);
+
+  const fetchExpenses = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/expenses/${tripId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setExpenses(data);
+    } catch (err) {
+      toast.error('Failed to load expenses');
+    }
+  };
+
+  const fetchAnalysis = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/expenses/analysis/${tripId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setAnalysis(data);
+    } catch (err) {
+      console.error('Failed to load analysis');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await fetch(`${apiUrl}/api/expenses`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ ...formData, tripId })
       });
 
-      if (!res.ok) throw new Error("Failed to add expense");
+      if (!res.ok) throw new Error('Failed to add expense');
 
-      toast.success("Expense added successfully");
+      toast.success('Expense added successfully');
       setIsAdding(false);
       setFormData({
-        category: "Other",
-        description: "",
-        amount: "",
-        date: new Date().toISOString().split("T")[0]
+        category: 'Other',
+        description: '',
+        amount: '',
+        date: new Date().toISOString().split('T')[0]
       });
       fetchExpenses();
       fetchAnalysis();
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to add expense");
+      toast.error('Failed to add expense');
     }
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this expense?")) return;
+    if (!window.confirm('Are you sure you want to delete this expense?')) return;
     try {
       const res = await fetch(`${apiUrl}/api/expenses/${id}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` }
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error("Failed to delete");
-      toast.success("Expense deleted");
+      if (!res.ok) throw new Error('Failed to delete');
+      toast.success('Expense deleted');
       fetchExpenses();
       fetchAnalysis();
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete expense");
+      toast.error('Failed to delete expense');
     }
   };
 
@@ -122,7 +120,7 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
       category: expense.category,
       description: expense.description,
       amount: expense.amount.toString(),
-      date: expense.date.split("T")[0]
+      date: expense.date.split('T')[0]
     });
   };
 
@@ -130,21 +128,20 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
     e.preventDefault();
     try {
       const res = await fetch(`${apiUrl}/api/expenses/${editingId}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });
-      if (!res.ok) throw new Error("Update failed");
-      toast.success("Expense updated");
+      if (!res.ok) throw new Error('Update failed');
+      toast.success('Expense updated');
       setEditingId(null);
       fetchExpenses();
       fetchAnalysis();
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to update expense");
+      toast.error('Failed to update expense');
     }
   };
 
@@ -152,6 +149,7 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header & Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 mb-2">
@@ -167,12 +165,12 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
             <TrendingDown className="w-4 h-4" />
             <span className="text-sm font-medium">Remaining</span>
           </div>
-          <div className={`text-2xl font-bold ${(analysis?.remainingBudget || 0) < 0 ? "text-red-500" : "text-emerald-500"}`}>
+          <div className={`text-2xl font-bold ${(analysis?.remainingBudget || 0) < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
             ₹{analysis?.remainingBudget.toLocaleString()}
           </div>
           <div className="mt-2 w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
             <div 
-              className={`h-full transition-all duration-1000 ${(analysis?.utilizationPercentage || 0) > 90 ? "bg-red-500" : "bg-emerald-500"}`}
+              className={`h-full transition-all duration-1000 ${(analysis?.utilizationPercentage || 0) > 90 ? 'bg-red-500' : 'bg-emerald-500'}`}
               style={{ width: `${Math.min(analysis?.utilizationPercentage || 0, 100)}%` }}
             />
           </div>
@@ -188,6 +186,7 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
         </div>
       </div>
 
+      {/* Expense Form & Actions */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold">Trip Expenses</h3>
         {!isAdding && !editingId && (
@@ -239,7 +238,7 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
               type="submit"
               className="flex-1 bg-black dark:bg-white text-white dark:text-black p-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2"
             >
-              <Save className="w-4 h-4" /> {editingId ? "Update" : "Save"}
+              <Save className="w-4 h-4" /> {editingId ? 'Update' : 'Save'}
             </button>
             <button
               type="button"
@@ -252,6 +251,7 @@ export const ExpenseTracker = ({ tripId }: { tripId: string }) => {
         </form>
       )}
 
+      {/* Expense List */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
         {expenses.length === 0 ? (
           <div className="p-12 text-center text-zinc-500">
