@@ -11,7 +11,6 @@ import { FlightBookingForm } from "./pages/Booking/FlightBookingForm"
 import { ServiceBookingForm } from "./pages/Booking/ServiceBookingForm"
 import { Toaster } from "react-hot-toast"
 import ProtectedRoute from "./components/ProtectedRoute"
-import { ChatBot } from "./components/ChatBot"
 
 function App() {
   return (
@@ -56,7 +55,6 @@ function App() {
             } />
           </Routes>
         </main>
-        <ChatBot />
       </div>
     </Router>
   )
