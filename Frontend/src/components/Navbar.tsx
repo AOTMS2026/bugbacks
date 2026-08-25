@@ -47,9 +47,6 @@ export function Navbar() {
               {user && (
                 <>
                   <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
-                    <Link to="/my-trips" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Trip Details</Link>
-                  </motion.div>
-                  <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 300 }}>
                     <Link to="/profile" className="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Profile</Link>
                   </motion.div>
                 </>
@@ -176,7 +173,6 @@ export function Navbar() {
               <Link to="/destinations" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Destinations</Link>
               {user && (
                 <>
-                  <Link to="/my-trips" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">My Trips</Link>
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="block rounded-md px-3 py-2 text-base font-medium text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10">Profile</Link>
                 </>
               )}
