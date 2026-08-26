@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 
 export function DestinationSearch() {
   const destinations = [
-    { id: 1, img: "/destination-1.jpg" },
+    { id: 1, img: "/Destination.png" },
     { id: 2, img: "/destination-2.jpg" },
     { id: 3, img: "/destination-3.jpg" },
     { id: 4, img: "/destination-4.jpg" },

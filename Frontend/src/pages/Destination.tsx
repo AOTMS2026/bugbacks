@@ -21,8 +21,8 @@ export function Destination() {
                 Explore the <span className="text-gray-500">World</span>
               </h1>
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                Discover thousands of destinations tailored to your preferences. 
-                From the serene beaches of Bali to the historic streets of Rome, 
+                Discover thousands of destinations tailored to your preferences.
+                From the serene beaches of Bali to the historic streets of Rome,
                 our global network connects you to the most breathtaking places on Earth.
               </p>
             </motion.div>

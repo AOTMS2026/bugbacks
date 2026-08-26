@@ -91,9 +91,6 @@ export function Home() {
       {/* NEW SPECIAL TRIPS SECTION */}
       <SpecialTrips />
 
-      {/* NEW PACKAGES SECTION */}
-      <Packages />
-
       {/* NEW SERVICES SECTION */}
       <Services />
 
@@ -290,6 +287,9 @@ export function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* NEW PACKAGES SECTION */}
+      <Packages />
 
       <Footer />
     </div>

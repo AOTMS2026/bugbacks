@@ -11,10 +11,12 @@ import { FlightBookingForm } from "./pages/Booking/FlightBookingForm"
 import { ServiceBookingForm } from "./pages/Booking/ServiceBookingForm"
 import { Toaster } from "react-hot-toast"
 import ProtectedRoute from "./components/ProtectedRoute"
+import ScrollToTop from "./components/ScrollToTop"
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Toaster position="top-right" reverseOrder={false} />
       <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white transition-colors duration-300">
         <main>
