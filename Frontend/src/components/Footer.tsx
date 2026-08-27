@@ -75,7 +75,7 @@ export function Footer() {
         </div>
 
         <div className="pt-8 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-sm text-gray-400 dark:text-gray-500">© {new Date().getFullYear()} AI Travel. All Rights Reserved.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">© {new Date().getFullYear()} BAG PACK HOLIDAYS.ALL RIGHTS RESERVED</p>
           <div className="flex gap-8 text-sm text-gray-400 dark:text-gray-500 font-medium">
             <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-black dark:hover:text-white transition-colors">Terms of Service</a>
